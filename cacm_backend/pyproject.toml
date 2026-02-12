@@ -1,10 +1,21 @@
 [project]
-name = "cacm-core"
+name = "core"
 version = "0.1.0"
 description = "CACM supports NERC CIP-010-4 by collecting baseline configuration evidence across Windows/Linux and minimally invasive telemetry from hardened OT appliances to detect drift, unauthorized changes, and anomalies over time."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pysnmp>=7.1.22",
+]
+
+[project.optional-dependencies]
+fastapi = [
+    "uvicorn>=0.40.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [

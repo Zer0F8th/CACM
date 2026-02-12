@@ -1,0 +1,7 @@
+services:
+  snmp-target:
+    build: ./docker
+    container_name: cacm-snmp-target
+    ports:
+      - "1161:161/udp"
+    restart: unless-stopped
