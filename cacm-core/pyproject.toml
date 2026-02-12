@@ -1,0 +1,15 @@
+[project]
+name = "cacm-core"
+version = "0.1.0"
+description = "CACM supports NERC CIP-010-4 by collecting baseline configuration evidence across Windows/Linux and minimally invasive telemetry from hardened OT appliances to detect drift, unauthorized changes, and anomalies over time."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "cowsay>=6.1",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+]

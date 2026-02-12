@@ -1,0 +1,3 @@
+# Ref: https://docs.astral.sh/uv/concepts/projects/workspaces/#workspace-sources
+[tool.uv.workspace]
+members = ["cacm-core"]
