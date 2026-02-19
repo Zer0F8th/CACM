@@ -1,0 +1,27 @@
+services:
+  postgres:
+  # Postgres: PostgreSQL database service
+      image: postgres:latest
+      container_name: cacm-postgres
+      restart: always
+      ports:
+          - "5432:5432"
+      environment:
+        POSTGRES_USER: username # The PostgreSQL user (useful to connect to the database)
+        POSTGRES_PASSWORD: password # The PostgreSQL password (useful to connect to the database)
+        POSTGRES_DB: cacm_db # The PostgreSQL default database (automatically created at first launch)
+      volumes:
+        - ./svc_data/postgres_data:/var/lib/postgresql # See breaking change on PR https://github.com/docker-library/postgres/pull/1259
+  pgweb:
+  # Pgweb: Web-based PostgreSQL database browser
+    container_name: cacm-pgweb
+    restart: always
+    image: sosedoff/pgweb
+    ports:
+      - 8081:8081
+    links:
+      - postgres:postgres
+    environment:
+      - PGWEB_DATABASE_URL=postgres://username:password@postgres:5432/cacm_db?sslmode=disable
+    depends_on:
+      - postgres
