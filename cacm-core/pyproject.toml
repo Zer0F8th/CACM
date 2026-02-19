@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "CACM supports NERC CIP-010-4 by collecting baseline configuration evidence across Windows/Linux and minimally invasive telemetry from hardened OT appliances to detect drift, unauthorized changes, and anomalies over time."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi[standard]>=0.129.0",
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.1",
+]
 
 [dependency-groups]
 dev = [
