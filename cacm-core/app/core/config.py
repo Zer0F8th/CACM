@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
 
     pg_dsn: PostgresDsn = (
-        "postgres://username:password@localhost:5432/cacm_db?sslmode=disable"
+        "postgresql+asyncpg://username:password@localhost:5432/cacm_db"
     )
 
     amqp_dsn: AmqpDsn = "amqp://user:pass@localhost:5672/"
