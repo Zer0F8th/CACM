@@ -5,9 +5,13 @@ description = "CACM supports NERC CIP-010-4 by collecting baseline configuration
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.4",
+    "asyncpg>=0.31.0",
     "fastapi[standard]>=0.129.0",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
+    "sqlmodel>=0.0.34",
 ]
 
 [dependency-groups]
