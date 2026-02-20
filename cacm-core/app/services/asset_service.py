@@ -31,6 +31,14 @@ class AssetService:
         self.db = db
 
     async def create(self, data: AssetCreate) -> Asset:
+        if (
+            data.system_type == SystemType.BES_CYBER_SYSTEM
+            and data.parent_bes_cyber_system_id is not None
+        ):
+            raise AssetValidationError(
+                "BES Cyber System assets cannot have a parent BES Cyber System"
+            )
+
         # If an associated system type, validate the parent exists and is a BCS
         if (
             data.system_type != SystemType.BES_CYBER_SYSTEM

@@ -3,6 +3,7 @@ from typing import Optional
 import uuid as uuid_mod
 from datetime import datetime
 
+from pydantic import field_validator
 from sqlmodel import SQLModel, Field, Relationship, Column, DateTime
 from sqlalchemy import Enum as SAEnum, Text, func
 
@@ -163,6 +164,13 @@ class AssetCreate(SQLModel):
     )
     has_external_routable_connectivity: bool = False
 
+    @field_validator("parent_bes_cyber_system_id", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: object) -> object:
+        if v == "":
+            return None
+        return v
+
 
 class AssetPublic(AssetBase):
     """Full asset response including id and timestamps."""
@@ -199,6 +207,13 @@ class AssetUpdate(SQLModel):
     location: str | None = None
     has_external_routable_connectivity: bool | None = None
     status: AssetStatus | None = None
+
+    @field_validator("parent_bes_cyber_system_id", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: object) -> object:
+        if v == "":
+            return None
+        return v
 
 
 class AssetListParams(SQLModel):
