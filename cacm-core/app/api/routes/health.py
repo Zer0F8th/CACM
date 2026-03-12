@@ -39,11 +39,20 @@ class PostgresHealth(BaseModel):
     error: str | None = None
 
 
+class RedisHealth(BaseModel):
+    status: ServiceStatus
+    host: str
+    port: int
+    response_ms: float = Field(description="TCP connect time in milliseconds")
+    error: str | None = None
+
+
 class HealthResponse(BaseModel):
     status: SystemStatus
     started_at: datetime
     uptime_seconds: int
     postgres: PostgresHealth
+    redis: RedisHealth
 
 
 # Health Check Helpers
@@ -82,6 +91,36 @@ def _probe_postgres(
         )
 
 
+def _probe_redis(
+    dsn: str,
+    timeout: float = 2.0,
+) -> RedisHealth:
+    """Open a raw TCP socket to the Redis host and measure latency."""
+    parsed = urlparse(dsn)
+    host = parsed.hostname or "localhost"
+    port = parsed.port or 6379
+
+    t0 = time.perf_counter()
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            elapsed_ms = (time.perf_counter() - t0) * 1_000
+            return RedisHealth(
+                status=ServiceStatus.UP,
+                host=host,
+                port=port,
+                response_ms=round(elapsed_ms, 2),
+            )
+    except OSError as exc:
+        elapsed_ms = (time.perf_counter() - t0) * 1_000
+        return RedisHealth(
+            status=ServiceStatus.DOWN,
+            host=host,
+            port=port,
+            response_ms=round(elapsed_ms, 2),
+            error=str(exc),
+        )
+
+
 # Routes
 
 
@@ -98,8 +137,9 @@ def health_root(response: Response) -> HealthResponse:
     * **503** - one or more dependencies unreachable
     """
     pg = _probe_postgres(str(settings.pg_dsn))
+    rd = _probe_redis(str(settings.redis_dsn))
 
-    all_ok = pg.status is ServiceStatus.UP
+    all_ok = pg.status is ServiceStatus.UP and rd.status is ServiceStatus.UP
     if not all_ok:
         response.status_code = 503
 
@@ -108,6 +148,7 @@ def health_root(response: Response) -> HealthResponse:
         started_at=_STARTED_AT,
         uptime_seconds=int(time.monotonic() - _START_MONO),
         postgres=pg,
+        redis=rd,
     )
 
 
@@ -127,3 +168,21 @@ def health_postgres(response: Response) -> PostgresHealth:
     if pg.status is ServiceStatus.DOWN:
         response.status_code = 503
     return pg
+
+
+@router.get(
+    "/redis",
+    summary="Redis probe",
+    response_model=RedisHealth,
+)
+def health_redis(response: Response) -> RedisHealth:
+    """
+    Dedicated Redis connectivity probe.
+
+    * **200** - reachable
+    * **503** - unreachable
+    """
+    rd = _probe_redis(str(settings.redis_dsn))
+    if rd.status is ServiceStatus.DOWN:
+        response.status_code = 503
+    return rd

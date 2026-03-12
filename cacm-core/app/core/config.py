@@ -2,10 +2,10 @@ from collections.abc import Callable
 from typing import Annotated, Any
 
 from pydantic import (
-    AmqpDsn,
     AnyUrl,
     BeforeValidator,
     ImportString,
+    RedisDsn,
     computed_field,
     PostgresDsn,
 )
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
         "postgresql+asyncpg://username:password@localhost:5432/cacm_db"
     )
 
-    amqp_dsn: AmqpDsn = "amqp://user:pass@localhost:5672/"
+    redis_dsn: RedisDsn = "redis://localhost:6379/0"
 
     special_function: ImportString[Callable[[Any], Any]] = "math.cos"
 
@@ -57,4 +57,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()  # type: ignore
-print(Settings().model_dump())

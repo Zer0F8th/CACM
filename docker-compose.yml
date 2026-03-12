@@ -10,8 +10,10 @@ services:
       - "8000:8000"
     environment:
       - my_prefix_pg_dsn=postgresql+asyncpg://username:password@postgres:5432/cacm_db
+      - my_prefix_redis_dsn=redis://redis:6379/0
     depends_on:
       - postgres
+      - redis
   postgres:
   # Postgres: PostgreSQL database service
       image: postgres:latest
@@ -37,4 +39,60 @@ services:
     environment:
       - PGWEB_DATABASE_URL=postgres://username:password@postgres:5432/cacm_db?sslmode=disable
     depends_on:
+      - postgres
+  redis:
+  # Redis: Celery broker and cache
+    image: redis:7-alpine
+    container_name: cacm-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./svc_data/redis_data:/data
+    command: redis-server --appendonly yes
+  redis-insight:
+  # Redis Insight: Web-based Redis browser
+    image: redis/redisinsight:latest
+    container_name: cacm-redis-insight
+    restart: always
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+  test-asset-linux:
+  # Test Asset: Ubuntu with SSH for baseline collection testing
+    container_name: cacm-test-asset-linux
+    build:
+      context: ./test-assets/linux
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "2222:22"
+  celery-worker:
+  # Celery Worker: Task execution (collect / normalize / compare)
+    container_name: cacm-celery-worker
+    build:
+      context: ./cacm-core
+      dockerfile: Dockerfile
+    restart: always
+    command: celery -A app.worker.celery_app:celery worker --loglevel=info --concurrency=2
+    environment:
+      - my_prefix_redis_dsn=redis://redis:6379/0
+      - my_prefix_pg_dsn=postgresql+asyncpg://username:password@postgres:5432/cacm_db
+    depends_on:
+      - redis
+      - postgres
+  celery-beat:
+  # Celery Beat: Periodic job scheduler
+    container_name: cacm-celery-beat
+    build:
+      context: ./cacm-core
+      dockerfile: Dockerfile
+    restart: always
+    command: celery -A app.worker.celery_app:celery beat --loglevel=info
+    environment:
+      - my_prefix_redis_dsn=redis://redis:6379/0
+      - my_prefix_pg_dsn=postgresql+asyncpg://username:password@postgres:5432/cacm_db
+    depends_on:
+      - redis
       - postgres

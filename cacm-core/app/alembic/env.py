@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -5,9 +6,18 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from app.models.asset import Asset  # noqa: F401, E402 – registers table metadata
+from sqlmodel import SQLModel  # noqa: E402
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Allow the database URL to be set via the environment variable used by the app.
+# This ensures migrations work inside Docker where the host is "postgres", not "localhost".
+env_url = os.getenv("my_prefix_pg_dsn")
+if env_url:
+    config.set_main_option("sqlalchemy.url", env_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -16,9 +26,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = SQLModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -57,8 +65,16 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    cfg = config.get_section(config.config_ini_section, {})
+
+    # Alembic runs synchronously — swap the async driver for psycopg2.
+    url = cfg.get("sqlalchemy.url", "")
+    cfg["sqlalchemy.url"] = url.replace(
+        "postgresql+asyncpg://", "postgresql+psycopg2://"
+    )
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        cfg,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

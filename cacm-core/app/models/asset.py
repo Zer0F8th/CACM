@@ -62,21 +62,21 @@ class AssetBase(SQLModel):
     # CIP classification
     impact_level: ImpactLevel = Field(
         sa_column=Column(
-            SAEnum(ImpactLevel, name="impact_level_enum"),
+            SAEnum(ImpactLevel, name="impact_level_enum", values_callable=lambda e: [m.value for m in e]),
             nullable=False,
             index=True,
         )
     )
     system_type: SystemType = Field(
         sa_column=Column(
-            SAEnum(SystemType, name="system_type_enum"),
+            SAEnum(SystemType, name="system_type_enum", values_callable=lambda e: [m.value for m in e]),
             nullable=False,
             index=True,
         )
     )
     device_class: DeviceClass = Field(
         sa_column=Column(
-            SAEnum(DeviceClass, name="device_class_enum"),
+            SAEnum(DeviceClass, name="device_class_enum", values_callable=lambda e: [m.value for m in e]),
             nullable=False,
             index=True,
         )
@@ -98,7 +98,7 @@ class AssetBase(SQLModel):
     status: AssetStatus = Field(
         default=AssetStatus.PENDING,
         sa_column=Column(
-            SAEnum(AssetStatus, name="asset_status_enum"),
+            SAEnum(AssetStatus, name="asset_status_enum", values_callable=lambda e: [m.value for m in e]),
             nullable=False,
             index=True,
             default=AssetStatus.PENDING,
