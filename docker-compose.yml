@@ -1,4 +1,17 @@
 services:
+  backend:
+  # Backend: FastAPI application
+    container_name: cacm-backend
+    build:
+      context: ./cacm-core
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - my_prefix_pg_dsn=postgresql+asyncpg://username:password@postgres:5432/cacm_db
+    depends_on:
+      - postgres
   postgres:
   # Postgres: PostgreSQL database service
       image: postgres:latest

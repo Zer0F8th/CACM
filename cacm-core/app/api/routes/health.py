@@ -94,8 +94,8 @@ def health_root(response: Response) -> HealthResponse:
     """
     Returns the overall system health.
 
-    * **200** – all dependencies healthy
-    * **503** – one or more dependencies unreachable
+    * **200** - all dependencies healthy
+    * **503** - one or more dependencies unreachable
     """
     pg = _probe_postgres(str(settings.pg_dsn))
 
@@ -120,8 +120,8 @@ def health_postgres(response: Response) -> PostgresHealth:
     """
     Dedicated Postgres connectivity probe.
 
-    * **200** – reachable
-    * **503** – unreachable
+    * **200** - reachable
+    * **503** - unreachable
     """
     pg = _probe_postgres(str(settings.pg_dsn))
     if pg.status is ServiceStatus.DOWN:
